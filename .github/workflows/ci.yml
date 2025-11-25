@@ -49,7 +49,7 @@ jobs:
 
             - name: Upload build artifacts
               if: matrix.node-version == '20.x'
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v5
               with:
                   name: build-output
                   path: build/
@@ -98,7 +98,7 @@ jobs:
                     LICENSE
 
             - name: Upload release artifact
-              uses: actions/upload-artifact@v3
+              uses: actions/upload-artifact@v5
               with:
                   name: release-package
                   path: release/
