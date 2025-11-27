@@ -4,7 +4,8 @@
 
 import { randomUUID } from "crypto";
 import { Context, CreateContextInput, UpdateContextInput } from "../models/index.js";
-import { mockStorage } from "../storage/mock-storage.js";
+import { mongoStorage as storage } from "../storage/mongodb-storage.js";
+
 
 export class ContextService {
   async createContext(input: CreateContextInput): Promise<Context> {
@@ -24,12 +25,12 @@ export class ContextService {
       },
     };
 
-    await mockStorage.createContext(context);
+    await storage.createContext(context);
 
     // Add memories to context if provided
     if (input.memoryIds) {
       for (const memoryId of input.memoryIds) {
-        await mockStorage.addMemoryToContext(context.id, memoryId);
+        await storage.addMemoryToContext(context.id, memoryId);
       }
     }
 
@@ -37,7 +38,7 @@ export class ContextService {
   }
 
   async getContext(id: string): Promise<Context | null> {
-    const context = await mockStorage.getContext(id);
+    const context = await storage.getContext(id);
     return context || null;
   }
 
@@ -53,31 +54,31 @@ export class ContextService {
       updates.metadata = { ...updates.metadata, active: input.active } as any;
     }
 
-    const updated = await mockStorage.updateContext(input.id, updates);
+    const updated = await storage.updateContext(input.id, updates);
     return updated || null;
   }
 
   async deleteContext(id: string): Promise<boolean> {
-    return await mockStorage.deleteContext(id);
+    return await storage.deleteContext(id);
   }
 
   async listContexts(filter?: { type?: string; active?: boolean }): Promise<Context[]> {
-    return await mockStorage.listContexts(filter);
+    return await storage.listContexts(filter);
   }
 
   async activateContext(id: string): Promise<Context | null> {
     // Deactivate all contexts first
-    const allContexts = await mockStorage.listContexts();
+    const allContexts = await storage.listContexts();
     for (const ctx of allContexts) {
       if (ctx.metadata.active) {
-        await mockStorage.updateContext(ctx.id, {
+        await storage.updateContext(ctx.id, {
           metadata: { ...ctx.metadata, active: false },
         });
       }
     }
 
     // Activate the requested context
-    const updated = await mockStorage.updateContext(id, {
+    const updated = await storage.updateContext(id, {
       metadata: { active: true } as any,
     });
 
@@ -85,20 +86,21 @@ export class ContextService {
   }
 
   async addMemoryToContext(contextId: string, memoryId: string): Promise<boolean> {
-    return await mockStorage.addMemoryToContext(contextId, memoryId);
+    return await storage.addMemoryToContext(contextId, memoryId);
   }
 
   async getContextMemories(contextId: string) {
-    const context = await mockStorage.getContext(contextId);
+    const context = await storage.getContext(contextId);
     if (!context) return [];
 
     const memories = [];
     for (const memoryId of context.memoryIds) {
-      const memory = await mockStorage.getMemory(memoryId);
+      const memory = await storage.getMemory(memoryId);
       if (memory) memories.push(memory);
     }
 
     return memories;
+
   }
 }
 

@@ -8,46 +8,6 @@ SelfHub is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 Think of it as your **personal knowledge base that travels with you across all AI conversations**.
 
-## ✨ Features
-
-- 🧠 **9 MCP Tools** - Store, retrieve, search, and manage your memories
-- 🏷️ **Smart Organization** - Categories, tags, and importance levels
-- 📂 **Context Management** - Group memories by project, topic, or conversation
-- 🔍 **Text Search** - Find information quickly with keyword search
-- 📊 **Analytics** - Track your memory usage and patterns
-- ⚡ **Fast & Lightweight** - In-memory storage with instant responses
-- 🎁 **Sample Data** - Pre-loaded with 6 example memories to get started
-
-## 🚀 Quick Start
-
-### Prerequisites
-
-- **Node.js** 20.x or higher
-- **pnpm** 9.x or higher
-- **Claude Desktop** or **VS Code** with GitHub Copilot
-
-### Installation
-
-```bash
-# Clone the repository
-git clone https://github.com/Sagargupta16/SelfHub.git
-cd SelfHub
-
-# Install dependencies
-pnpm install
-
-# Build the project
-pnpm build
-```
-
-## 📱 Setup with Claude Desktop
-
-### Step 1: Build the Server
-
-```bash
-pnpm build
-```
-
 ### Step 2: Configure Claude Desktop
 
 Open the Claude Desktop configuration file:

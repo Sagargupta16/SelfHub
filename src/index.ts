@@ -9,10 +9,11 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { memoryService } from "./services/memory.service.js";
 import { contextService } from "./services/context.service.js";
+import { connectDatabase } from "./db/connection.js";
 
 /**
  * SelfHub MCP Server
- * Your personal AI memory hub with mock data storage
+ * Your personal AI memory hub with MongoDB persistent storage
  */
 
 // Define available tools
@@ -533,11 +534,19 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
  * Start the server
  */
 async function main() {
-  const transport = new StdioServerTransport();
-  await server.connect(transport);
-  console.error("🚀 SelfHub MCP Server running with mock data!");
-  console.error("📊 Loaded 6 sample memories and 2 sample contexts");
-  console.error("🛠️  Available tools: 9 (store, retrieve, search, list, delete, contexts, stats)");
+  try {
+    // Initialize MongoDB
+    await connectDatabase();
+
+    const transport = new StdioServerTransport();
+    await server.connect(transport);
+    console.error("🚀 SelfHub MCP Server running with MongoDB!");
+    console.error("💾 Database: Connected and ready");
+    console.error("🛠️  Available tools: 9 (store, retrieve, search, list, delete, contexts, stats)");
+  } catch (error) {
+    console.error("Failed to start server:", error);
+    process.exit(1);
+  }
 }
 
 main().catch((error) => {
