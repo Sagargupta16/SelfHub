@@ -10,6 +10,13 @@
 - Memory and Context schemas with full-text search indexes
 - 9 MCP tools: store/retrieve/list/search/delete memory, create/activate/list contexts, get stats
 
+## [0.0.2] - 2025-11-09
+
+- Enhance README with features and setup instructions
+- Add GitHub Actions workflows and funding options
+
 ## [0.0.1] - 2025-11-09
 
-- Initial MCP server setup with TypeScript and pnpm
+- Initialize SelfHub MCP server with TypeScript
+- Memory and context management tools via stdio transport
+- pnpm workspace setup
