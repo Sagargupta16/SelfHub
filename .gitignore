@@ -37,3 +37,6 @@ npm-debug.log*
 # Testing
 coverage/
 .nyc_output/
+
+# Added for consistency
+.next/
