@@ -1,10 +1,7 @@
 # Dependencies
 node_modules/
-package-lock.json
-yarn.lock
 
 # pnpm
-pnpm-lock.yaml
 
 # Build outputs
 build/
