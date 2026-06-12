@@ -8,6 +8,21 @@ SelfHub is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 Think of it as your **personal knowledge base that travels with you across all AI conversations**.
 
+## 🚀 Setup with Claude Desktop
+
+### Step 1: Install and Build
+
+```bash
+git clone https://github.com/Sagargupta16/SelfHub.git
+cd SelfHub
+pnpm install
+cp .env.example .env   # set MONGODB_URI to your MongoDB connection string
+pnpm build
+
+# Optional: load sample data
+pnpm seed
+```
+
 ### Step 2: Configure Claude Desktop
 
 Open the Claude Desktop configuration file:
@@ -53,9 +68,21 @@ pnpm build
 
 ### Step 2: Configure VS Code
 
-The workspace is already configured! Just reload VS Code:
+Create `.vscode/mcp.json` in your workspace (replace with your actual path):
 
-Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) → Type "Reload Window" → Press Enter
+```json
+{
+  "servers": {
+    "selfhub": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["C:\\absolute\\path\\to\\SelfHub\\build\\index.js"]
+    }
+  }
+}
+```
+
+Then reload VS Code: Press `Ctrl+Shift+P` (or `Cmd+Shift+P` on Mac) → Type "Reload Window" → Press Enter
 
 ### Step 3: Test in Copilot Chat
 
@@ -254,19 +281,19 @@ Search my code for "utility functions"
 
 ## 🗂️ Sample Data
 
-SelfHub comes with 6 pre-loaded sample memories:
+Run `pnpm seed` to load 6 sample memories into your database:
 
-1. **mem_001** - Dark mode UI preference (personal)
-2. **mem_002** - TypeScript coding standard (professional)
-3. **mem_003** - Vector embeddings concept (learning)
-4. **mem_004** - SelfHub project overview (projects)
-5. **mem_005** - Database development task (tasks)
-6. **mem_006** - ID generation utility code (code)
+1. **mem_sample_001** - Dark mode UI preference (personal)
+2. **mem_sample_002** - TypeScript best practice (professional)
+3. **mem_sample_003** - MongoDB basics (learning)
+4. **mem_sample_004** - Documentation update task (tasks)
+5. **mem_sample_005** - NPM commands quick reference (code)
+6. **mem_sample_006** - SelfHub project overview (projects)
 
 And 2 sample contexts:
 
-1. **ctx_001** - SelfHub Development (project)
-2. **ctx_002** - AI & Machine Learning (topic)
+1. **ctx_sample_001** - SelfHub Development (project)
+2. **ctx_sample_002** - Personal Preferences (topic)
 
 ## 🏗️ Project Structure
 
@@ -274,6 +301,10 @@ And 2 sample contexts:
 SelfHub/
 ├── src/
 │   ├── index.ts              # Main MCP server
+│   ├── seed.ts               # Sample data seeder
+│   ├── db/                   # Database layer
+│   │   ├── connection.ts
+│   │   └── schemas.ts
 │   ├── models/               # TypeScript type definitions
 │   │   ├── memory.model.ts
 │   │   ├── context.model.ts
@@ -282,14 +313,9 @@ SelfHub/
 │   │   ├── memory.service.ts
 │   │   └── context.service.ts
 │   └── storage/              # Storage implementation
-│       └── mock-storage.ts   # In-memory mock data
+│       └── mongodb-storage.ts # MongoDB persistent storage
 ├── build/                    # Compiled JavaScript output
-├── .github/                  # GitHub Actions CI/CD
-│   └── workflows/
-│       ├── ci.yml           # Continuous Integration
-│       └── release.yml      # Automated releases
-├── .vscode/                 # VS Code configuration
-│   └── settings.json        # MCP server settings
+├── .env.example              # Environment variable template
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -317,7 +343,7 @@ rm -rf build
 
 1. **MCP Server** (`src/index.ts`) - Implements the MCP protocol, defines 9 tools
 2. **Services Layer** - Business logic for memory and context operations
-3. **Storage Layer** - In-memory Map-based storage with sample data
+3. **Storage Layer** - MongoDB persistent storage via Mongoose (set `MONGODB_URI` in `.env`)
 4. **Models** - TypeScript interfaces for type safety
 
 ### Testing Locally
@@ -327,9 +353,9 @@ rm -rf build
 pnpm dev
 
 # You should see:
-# 🚀 SelfHub MCP Server running with mock data!
-# 📊 Loaded 6 sample memories and 2 sample contexts
-# 🛠️  Available tools: 9
+# 🚀 SelfHub MCP Server running with MongoDB!
+# 💾 Database: Connected and ready
+# 🛠️  Available tools: 9 (store, retrieve, search, list, delete, contexts, stats)
 ```
 
 The server runs on **stdio** (standard input/output) and waits for MCP protocol messages. You cannot interact with it directly - it needs an MCP client like Claude Desktop or VS Code.
@@ -392,17 +418,21 @@ pnpm build
 
 ### Data Not Persisting
 
-This is expected! The current version uses **in-memory storage**. All data resets when you restart the server. This is intentional for the initial version - persistent storage will be added in a future update.
+SelfHub uses **MongoDB persistent storage** - your data survives server restarts. If data isn't persisting:
 
-## 🚀 CI/CD
+1. **Check your `.env` file:**
 
-This project includes GitHub Actions workflows:
+   - Make sure `MONGODB_URI` points to your MongoDB instance
+   - Copy from the template if missing: `cp .env.example .env`
 
-- **CI Pipeline** - Runs on every push, tests on Node 18.x and 20.x
-- **Release Workflow** - Creates releases when you push version tags
-- **Dependabot** - Automatically updates dependencies
+2. **Verify the connection:**
 
-See `.github/workflows/` for details.
+   - The server logs `✅ Connected to MongoDB` on startup
+   - Without `MONGODB_URI`, it falls back to `mongodb://localhost:27017/selfhub`
+
+## 🔄 Dependency Updates
+
+This project uses [Renovate](https://docs.renovatebot.com/) for automated dependency updates - see `renovate.json`.
 
 ## 📖 Documentation
 
@@ -412,18 +442,17 @@ See `.github/workflows/` for details.
 
 ## 🗺️ Roadmap
 
-### Current Version (v0.1.0)
+### Current Version (v0.2.0)
 
-- ✅ In-memory storage
+- ✅ MongoDB persistent storage
 - ✅ 9 MCP tools
 - ✅ Memory categorization and tagging
 - ✅ Context management
 - ✅ Text-based search
-- ✅ Sample data
+- ✅ Sample data seeder
 
 ### Future Enhancements
 
-- [ ] Persistent SQLite storage
 - [ ] Vector embeddings for semantic search
 - [ ] File import/export (JSON, Markdown, CSV)
 - [ ] Data encryption for sensitive information
@@ -451,7 +480,7 @@ If you have questions or run into issues:
 
 Built with:
 
-- [Model Context Protocol SDK](https://github.com/modelcontextprotocol/sdk) - MCP implementation
+- [Model Context Protocol SDK](https://github.com/modelcontextprotocol/typescript-sdk) - MCP implementation
 - [TypeScript](https://www.typescriptlang.org/) - Type safety
 - [pnpm](https://pnpm.io/) - Fast package manager
 
