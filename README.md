@@ -138,7 +138,7 @@ List memories with optional filters.
 ```
 List all my professional memories
 Show me memories tagged with 'typescript'
-List memories sorted by importance
+List my personal memories
 ```
 
 **Parameters:**
@@ -149,8 +149,6 @@ List memories sorted by importance
 - `contextId` - Filter by context
 - `limit` - Max results (default: 50)
 - `offset` - Pagination offset
-- `sortBy` - Sort field: `createdAt`, `updatedAt`, `importance`, `accessCount`
-- `sortOrder` - `asc` or `desc`
 
 #### 4. `search_memories`
 
@@ -268,7 +266,7 @@ List all memories in the SelfHub context
 Store as learning: Vector embeddings represent text as numerical arrays
 Tag with "machine-learning" and "embeddings"
 Search my learning memories for "embeddings"
-List all my learning-related memories sorted by date
+List all my learning-related memories
 ```
 
 ### Code Snippets
