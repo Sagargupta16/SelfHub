@@ -12,7 +12,6 @@
     "start": "node build/index.js",
     "prepare": "pnpm run build",
     "typecheck": "tsc --noEmit",
-    "setup": "tsx src/setup.ts",
     "seed": "tsx src/seed.ts",
     "clean": "rimraf build",
     "reset": "pnpm clean && pnpm build",
