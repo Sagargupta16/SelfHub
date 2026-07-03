@@ -1,7 +1,7 @@
 {
   "name": "selfhub-mcp-server",
-  "version": "0.1.0",
-  "description": "A Model Context Protocol server",
+  "version": "0.2.0",
+  "description": "Personal MCP-powered digital hub - private data center with AI integration for memory, notes, and personal knowledge management",
   "main": "build/index.js",
   "type": "module",
   "packageManager": "pnpm@9.15.9",
@@ -21,7 +21,7 @@
     "mcp",
     "model-context-protocol"
   ],
-  "author": "",
+  "author": "Sagar Gupta",
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
@@ -29,10 +29,9 @@
     "mongoose": "^9.1.6"
   },
   "devDependencies": {
-    "@types/mongoose": "^5.11.97",
-    "@types/node": "^20.19.24",
+    "@types/node": "^26.1.0",
     "tsx": "^4.20.6",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.3"
   },
   "pnpm": {
     "overrides": {
