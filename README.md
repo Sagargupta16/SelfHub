@@ -1,5 +1,8 @@
 # SelfHub MCP Server
 
+[![CI/CD Pipeline](https://github.com/Sagargupta16/SelfHub/actions/workflows/ci.yml/badge.svg)](https://github.com/Sagargupta16/SelfHub/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
 **Your Personal AI Memory Hub** - Store and retrieve your personal data from any MCP-enabled AI assistant.
 
 ## 🎯 What is SelfHub?
@@ -460,7 +463,7 @@ This project uses [Renovate](https://docs.renovatebot.com/) for automated depend
 
 ## 🤝 Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) and feel free to submit a Pull Request.
 
 ## 📄 License
 
