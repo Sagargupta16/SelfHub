@@ -1,6 +1,6 @@
 {
   "name": "selfhub-mcp-server",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "Personal MCP-powered digital hub - private data center with AI integration for memory, notes, and personal knowledge management",
   "main": "build/index.js",
   "type": "module",
@@ -26,7 +26,7 @@
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
     "dotenv": "^17.2.3",
-    "mongoose": "^9.1.6"
+    "mongoose": "^9.7.2"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
@@ -35,8 +35,11 @@
   },
   "pnpm": {
     "overrides": {
-      "fast-uri": ">=3.2.0",
-      "ip-address": ">=10.1.1"
+      "fast-uri": ">=4.1.2",
+      "ip-address": ">=10.3.1",
+      "hono": ">=4.12.34",
+      "@hono/node-server": ">=1.19.15 <2",
+      "body-parser": ">=2.3.0"
     }
   }
 }

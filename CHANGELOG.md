@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.1] - 2026-09-02
+
+- Bump mongoose to 9.9.4 and add pnpm overrides for hono, @hono/node-server, fast-uri, ip-address, body-parser to resolve Dependabot security alerts
+
 ## [0.2.0] - 2026-03-14
 
 - Fix .env.example to use placeholder credentials
