@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.2] - 2026-09-03
+
+- Add pnpm override for qs >=6.16.0 to resolve array-limit bypass advisory (Dependabot alert #42)
+
 ## [0.2.1] - 2026-09-02
 
 - Bump mongoose to 9.9.4 and add pnpm overrides for hono, @hono/node-server, fast-uri, ip-address, body-parser to resolve Dependabot security alerts
