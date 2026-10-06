@@ -2,7 +2,8 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 
 // Load environment variables from .env file
-dotenv.config();
+// quiet: stdout is the MCP JSON-RPC channel, so dotenv must not log to it
+dotenv.config({ quiet: true });
 
 const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/selfhub';
 
@@ -10,8 +11,8 @@ const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/selfhu
 export async function connectDatabase(): Promise<void> {
   try {
     await mongoose.connect(MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
-    console.log('📍 Database:', mongoose.connection.name);
+    console.error('✅ Connected to MongoDB');
+    console.error('📍 Database:', mongoose.connection.name);
   } catch (error) {
     console.error('❌ MongoDB connection error:', error);
     throw error;
@@ -21,7 +22,7 @@ export async function connectDatabase(): Promise<void> {
 // Graceful shutdown
 process.on('SIGINT', async () => {
   await mongoose.connection.close();
-  console.log('🔌 MongoDB connection closed');
+  console.error('🔌 MongoDB connection closed');
   process.exit(0);
 });
 
