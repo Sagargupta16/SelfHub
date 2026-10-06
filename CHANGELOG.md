@@ -1,5 +1,9 @@
 # Changelog
 
+## [0.2.3] - 2026-10-06
+
+- Keep stdout clean for the MCP stdio transport: load dotenv with `quiet: true` (dotenv 17 logs an injection banner to stdout) and send the MongoDB connect/close log lines to stderr
+
 ## [0.2.2] - 2026-09-03
 
 - Add pnpm override for qs >=6.16.0 to resolve array-limit bypass advisory (Dependabot alert #42)

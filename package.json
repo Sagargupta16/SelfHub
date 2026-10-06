@@ -1,6 +1,6 @@
 {
   "name": "selfhub-mcp-server",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "Personal MCP-powered digital hub - private data center with AI integration for memory, notes, and personal knowledge management",
   "main": "build/index.js",
   "type": "module",
