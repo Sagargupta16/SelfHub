@@ -4,7 +4,7 @@
   "description": "Personal MCP-powered digital hub - private data center with AI integration for memory, notes, and personal knowledge management",
   "main": "build/index.js",
   "type": "module",
-  "packageManager": "pnpm@9.15.9",
+  "packageManager": "pnpm@12.11.2",
   "scripts": {
     "build": "tsc",
     "watch": "tsc --watch",
@@ -25,20 +25,20 @@
   "license": "MIT",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.28.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^18.0.0",
     "mongoose": "^9.7.2"
   },
   "devDependencies": {
     "@types/node": "^26.1.0",
     "tsx": "^4.20.6",
-    "typescript": "^6.0.3"
+    "typescript": "^7.0.0"
   },
   "pnpm": {
     "overrides": {
       "fast-uri": ">=4.1.2",
       "ip-address": ">=10.3.1",
       "hono": ">=4.12.34",
-      "@hono/node-server": ">=1.19.15 <2",
+      "@hono/node-server": "<3",
       "body-parser": ">=2.3.0",
       "qs": ">=6.16.0"
     }
