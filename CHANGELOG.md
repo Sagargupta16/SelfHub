@@ -1,5 +1,11 @@
 # Changelog
 
+## [0.2.4] - 2026-10-11
+
+- Monthly major update: Node 24, pnpm 12, TypeScript 7, dotenv 18, @hono/node-server 2, actions/checkout and setup-node v7, pnpm/action-setup v6
+- pnpm 12 refuses to run unapproved dependency build scripts (`ERR_PNPM_IGNORED_BUILDS`), so `pnpm-workspace.yaml` now approves esbuild's install script with `allowBuilds`
+- dotenv 18 with `quiet: true` still writes nothing to stdout, so the MCP stdio channel stays clean
+
 ## [0.2.3] - 2026-10-06
 
 - Keep stdout clean for the MCP stdio transport: load dotenv with `quiet: true` (dotenv 17 logs an injection banner to stdout) and send the MongoDB connect/close log lines to stderr
