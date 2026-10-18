@@ -20,7 +20,7 @@ Public repo at github.com/Sagargupta16/SelfHub. Runs locally as a stdio process 
 - **Framework**: `@modelcontextprotocol/sdk` (stdio transport)
 - **Database**: MongoDB via Mongoose 9
 - **Package manager**: pnpm 12 (overrides and `allowBuilds` live in `pnpm-workspace.yaml`; pnpm 12 ignores the `pnpm` field in `package.json`)
-- **Deploy target**: local-only (stdio). Distribution: npm `selfhub-mcp-server`, MCP Registry `io.github.Sagargupta16/selfhub`, and a local Docker Compose image
+- **Deploy target**: local-only (stdio). Distribution: a local Docker Compose image now; npm `selfhub-mcp-server` and MCP Registry `io.github.Sagargupta16/selfhub` once the first `v0.3.0` tag is published (not on npm yet)
 
 ## Run
 

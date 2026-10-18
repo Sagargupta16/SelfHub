@@ -13,15 +13,9 @@ Think of it as your **personal knowledge base that travels with you across all A
 
 ## Quick start
 
-Pick one way to run it. Each needs a MongoDB; option 2 brings its own.
+Pick one way to run it. Each needs a MongoDB; option 1 brings its own.
 
-**1. npm** (Node 24+, MongoDB at `MONGODB_URI` or `mongodb://localhost:27017/selfhub`):
-
-```bash
-claude mcp add selfhub -e MONGODB_URI=mongodb://localhost:27017/selfhub -- npx -y selfhub-mcp-server
-```
-
-**2. Docker Compose** (no local Node or MongoDB):
+**1. Docker Compose** (no local Node or MongoDB):
 
 ```bash
 git clone https://github.com/Sagargupta16/SelfHub.git
@@ -30,9 +24,15 @@ docker compose build
 claude mcp add selfhub -- docker compose -f /absolute/path/to/SelfHub/docker-compose.yml run --rm -T selfhub
 ```
 
-The client starts MongoDB (data kept in the `selfhub-data` volume) the first time it launches the server. `docker compose up -d mongo` on its own gives you a MongoDB on `localhost:27017` for options 1 and 3.
+The client starts MongoDB (data kept in the `selfhub-data` volume) the first time it launches the server. `docker compose up -d mongo` on its own gives you a MongoDB on `localhost:27017` for options 2 and 3. That port is bound on `127.0.0.1`, so stop any local `mongod` already listening on 27017 first.
 
-**3. From source** - see [Setup with Claude Desktop](#-setup-with-claude-desktop) below.
+**2. From source** - see [Setup with Claude Desktop](#-setup-with-claude-desktop) below.
+
+**3. npm, after the first release** (Node 24+, MongoDB at `MONGODB_URI` or `mongodb://localhost:27017/selfhub`). The `selfhub-mcp-server` package is not on npm yet; this works once the `v0.3.0` tag has been published:
+
+```bash
+claude mcp add selfhub -e MONGODB_URI=mongodb://localhost:27017/selfhub -- npx -y selfhub-mcp-server
+```
 
 ### See it work in 10 seconds
 
@@ -456,7 +456,9 @@ CI runs `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm audit --audit-l
 
 ### Releases
 
-Pushing a `v*` tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml): it checks that the tag, `package.json` and `server.json` versions match, runs the gates, publishes to npm with trusted publishing (OIDC, no token in secrets), and publishes `server.json` to the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.Sagargupta16/selfhub`.
+Pushing a `v*` tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml): it checks that the tag, `package.json` and `server.json` versions match, runs the gates, publishes to npm with trusted publishing (OIDC, no token in secrets), and publishes `server.json` to the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.Sagargupta16/selfhub`. Re-running a tag skips the npm step when that version is already on npm.
+
+The first release needs a one-time npm setup, because npm's [trusted publisher docs](https://docs.npmjs.com/trusted-publishers) only describe adding one from an existing package's settings page: publish `0.3.0` once from a local checkout with `npm publish --access public`, then add `Sagargupta16/SelfHub` and `release.yml` as the trusted publisher under the package's Settings on npmjs.com, and push the `v0.3.0` tag so the workflow publishes `server.json` to the MCP Registry. Later versions publish from the tag alone.
 
 ### How It Works
 
@@ -571,7 +573,7 @@ This project uses [Renovate](https://docs.renovatebot.com/) for automated depend
 - ✅ Sample data seeder
 - End-to-end test suite in CI
 - Docker Compose setup
-- npm package and MCP Registry metadata, published from a tag
+- npm package and MCP Registry metadata, ready to publish from a tag
 
 ### Future Enhancements
 
