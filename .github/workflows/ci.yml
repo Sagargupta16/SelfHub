@@ -47,6 +47,7 @@ jobs:
 
       # Spawns build/index.js under the MCP SDK client against mongodb-memory-server
       - name: Test
+        timeout-minutes: 10
         run: pnpm test
 
   docker:

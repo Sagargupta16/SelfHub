@@ -106,7 +106,8 @@ const TOOLS: Tool[] = [
           description: "Maximum number of results (default: 50)",
         },
         offset: {
-          type: "number",
+          type: "integer",
+          minimum: 0,
           description: "Offset for pagination (default: 0)",
         },
       },

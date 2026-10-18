@@ -91,7 +91,7 @@ export class MemoryService {
       {
         sortField: input.sortBy || "createdAt",
         sortOrder: input.sortOrder || "desc",
-        offset: input.offset || 0,
+        offset: Math.max(0, Math.trunc(input.offset || 0)),
         limit: input.limit || 50,
       }
     );
