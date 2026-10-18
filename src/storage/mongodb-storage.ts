@@ -1,6 +1,13 @@
 import { Memory, Context } from '../models/index.js';
 import { MemoryModel, ContextModel } from '../db/schemas.js';
 
+export interface MemoryFilter {
+    type?: string;
+    category?: string;
+    tags?: string[];
+    contextId?: string;
+}
+
 export class MongoDBStorage {
     // ========== Memory Operations ==========
 
@@ -62,42 +69,79 @@ export class MongoDBStorage {
         return this.docToMemory(doc);
     }
 
-    async deleteMemory(id: string): Promise<boolean> {
-        const result = await MemoryModel.deleteOne({ _id: id });
-        return result.deletedCount > 0;
+    /** Bulk read for context loading: one query, input order kept, no access-count writes */
+    async getMemoriesByIds(ids: string[]): Promise<Memory[]> {
+        if (ids.length === 0) return [];
+        const docs = await MemoryModel.find({ _id: { $in: ids } });
+        const byId = new Map(docs.map((doc) => [String(doc._id), this.docToMemory(doc)]));
+        return ids.flatMap((id) => byId.get(id) ?? []);
     }
 
-    async listMemories(filter?: {
-        type?: string;
-        category?: string;
-        tags?: string[];
-        contextId?: string;
-    }): Promise<Memory[]> {
-        const query: any = {};
+    async deleteMemory(id: string): Promise<boolean> {
+        const result = await MemoryModel.deleteOne({ _id: id });
+        if (result.deletedCount === 0) return false;
 
-        if (filter?.type) query.type = filter.type;
-        if (filter?.category) query.category = filter.category;
-        if (filter?.tags && filter.tags.length > 0) {
+        // Keep context memory counts honest
+        await ContextModel.updateMany({ memoryIds: id }, { $pull: { memoryIds: id } });
+        return true;
+    }
+
+    async listMemories(
+        filter: MemoryFilter = {},
+        page: { sortField?: string; sortOrder?: 'asc' | 'desc'; offset?: number; limit?: number } = {}
+    ): Promise<{ memories: Memory[]; total: number }> {
+        const query = this.buildMemoryQuery(filter);
+        const sortField = `metadata.${page.sortField ?? 'createdAt'}`;
+
+        // Sort, skip and limit run in MongoDB; only one page crosses the wire
+        const [docs, total] = await Promise.all([
+            MemoryModel.find(query)
+                .sort({ [sortField]: page.sortOrder === 'asc' ? 1 : -1, _id: 1 })
+                .skip(page.offset ?? 0)
+                .limit(page.limit ?? 50),
+            MemoryModel.countDocuments(query),
+        ]);
+
+        return { memories: docs.map((doc) => this.docToMemory(doc)), total };
+    }
+
+    async searchMemories(
+        text: string,
+        filter: MemoryFilter = {},
+        limit = 10
+    ): Promise<{ results: Array<{ memory: Memory; score: number }>; total: number }> {
+        // Filters go into the same query as $text, so they apply before the limit
+        const query = { ...this.buildMemoryQuery(filter), $text: { $search: text } };
+
+        const [docs, total] = await Promise.all([
+            MemoryModel.find(query, { score: { $meta: 'textScore' } })
+                .sort({ score: { $meta: 'textScore' } })
+                .limit(limit),
+            MemoryModel.countDocuments(query),
+        ]);
+
+        return {
+            results: docs.map((doc) => ({
+                memory: this.docToMemory(doc),
+                score: Math.round((doc.get('score') as number) * 100) / 100,
+            })),
+            total,
+        };
+    }
+
+    private buildMemoryQuery(filter: MemoryFilter): Record<string, unknown> {
+        const query: Record<string, unknown> = {};
+
+        if (filter.type) query.type = filter.type;
+        if (filter.category) query.category = filter.category;
+        if (filter.tags && filter.tags.length > 0) {
             query['metadata.tags'] = { $in: filter.tags };
         }
-        if (filter?.contextId) {
+        if (filter.contextId) {
             query['relations.contextId'] = filter.contextId;
         }
 
-        const docs = await MemoryModel.find(query).sort({ 'metadata.createdAt': -1 });
-        return docs.map((doc) => this.docToMemory(doc));
-    }
-
-    async searchMemories(query: string, limit = 10): Promise<Memory[]> {
-        // MongoDB text search
-        const docs = await MemoryModel.find(
-            { $text: { $search: query } },
-            { score: { $meta: 'textScore' } }
-        )
-            .sort({ score: { $meta: 'textScore' } })
-            .limit(limit);
-
-        return docs.map((doc) => this.docToMemory(doc));
+        return query;
     }
 
     // ========== Context Operations ==========

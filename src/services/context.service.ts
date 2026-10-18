@@ -16,7 +16,7 @@ export class ContextService {
       name: input.name,
       type: input.type,
       description: input.description,
-      memoryIds: input.memoryIds || [],
+      memoryIds: [],
       metadata: {
         createdAt: now,
         updatedAt: now,
@@ -27,10 +27,12 @@ export class ContextService {
 
     await storage.createContext(context);
 
-    // Add memories to context if provided
+    // addMemoryToContext skips IDs that do not exist, so only real memories are linked
     if (input.memoryIds) {
       for (const memoryId of input.memoryIds) {
-        await storage.addMemoryToContext(context.id, memoryId);
+        if (await storage.addMemoryToContext(context.id, memoryId)) {
+          context.memoryIds.push(memoryId);
+        }
       }
     }
 
@@ -96,14 +98,7 @@ export class ContextService {
     const context = await storage.getContext(contextId);
     if (!context) return [];
 
-    const memories = [];
-    for (const memoryId of context.memoryIds) {
-      const memory = await storage.getMemory(memoryId);
-      if (memory) memories.push(memory);
-    }
-
-    return memories;
-
+    return await storage.getMemoriesByIds(context.memoryIds);
   }
 }
 
