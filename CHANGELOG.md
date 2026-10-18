@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.2.5] - 2026-10-18
+
+- Fix `get_stats`, `list_memories` and `list_contexts` failing with "Arguments are required" when the client omits `arguments`
+- Fix `search_memories` ignoring the `type` filter and `create_context` ignoring `memoryIds`: both were documented but never reached the services
+- Fix `activate_context` with an unknown ID deactivating the currently active context
+- Report the real package version in the MCP `serverInfo` handshake instead of a hard-coded 0.1.0
+- Fix `pnpm clean` (and `pnpm reset`), which called `rimraf` without it being installed
+- Move pnpm overrides from `package.json` to `pnpm-workspace.yaml`: pnpm 12 ignores the `pnpm` field, so since 0.2.4 the lockfile had fallen back to vulnerable `ip-address` 10.1.0 (1 high, 4 moderate advisories); now 10.7.4, `pnpm audit` is clean
+- Bump `@modelcontextprotocol/sdk` to 1.32.1 (GHSA-6qxp-vccf-f47h, high), mongoose 9.11.2, dotenv 18.0.8, @types/node 26.6.5, tsx 4.23.15
+- CI: least-privilege `permissions: contents: read`, install with `--ignore-scripts`, and a `pnpm audit --audit-level=high` step, because GitHub's dependency graph only reads the first YAML document of the pnpm 12 lockfile and no longer sees app dependencies
+- README: architecture diagram, design decisions, Claude Code setup
+
 ## [0.2.4] - 2026-10-11
 
 - Monthly major update: Node 24, pnpm 12, TypeScript 7, dotenv 18, @hono/node-server 2, actions/checkout and setup-node v7, pnpm/action-setup v6

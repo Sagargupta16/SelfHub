@@ -67,6 +67,9 @@ export class ContextService {
   }
 
   async activateContext(id: string): Promise<Context | null> {
+    // Unknown id must not deactivate the currently active context
+    if (!(await storage.getContext(id))) return null;
+
     // Deactivate all contexts first
     const allContexts = await storage.listContexts();
     for (const ctx of allContexts) {

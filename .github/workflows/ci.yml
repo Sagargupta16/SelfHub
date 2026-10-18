@@ -7,6 +7,9 @@ on:
     branches: [main]
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 jobs:
   build:
     name: Build and Test
@@ -27,7 +30,11 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        run: pnpm install --frozen-lockfile --ignore-scripts
+
+      # Dependabot cannot read the pnpm 12 lockfile, so CI audits it instead
+      - name: Audit dependencies
+        run: pnpm audit --audit-level=high
 
       - name: Type check
         run: pnpm typecheck
