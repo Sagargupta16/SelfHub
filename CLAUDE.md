@@ -20,7 +20,7 @@ Public repo at github.com/Sagargupta16/SelfHub. Runs locally as a stdio process 
 - **Framework**: `@modelcontextprotocol/sdk` (stdio transport)
 - **Database**: MongoDB via Mongoose 9
 - **Package manager**: pnpm 12 (overrides and `allowBuilds` live in `pnpm-workspace.yaml`; pnpm 12 ignores the `pnpm` field in `package.json`)
-- **Deploy target**: local-only
+- **Deploy target**: local-only (stdio). Distribution: a local Docker Compose image now; npm `selfhub-mcp-server` and MCP Registry `io.github.Sagargupta16/selfhub` once the first `v0.3.0` tag is published (not on npm yet)
 
 ## Run
 
@@ -29,11 +29,18 @@ pnpm install
 pnpm dev          # tsx watch src/index.ts (auto-reload)
 pnpm build        # tsc -> build/
 pnpm seed         # load 6 sample memories + 2 contexts
+pnpm test         # build + end-to-end tests
+pnpm demo         # cross-client demo on an in-memory MongoDB
+docker compose run --rm -T selfhub   # server + MongoDB in containers
 ```
 
 ## Test
 
-No test suite. `.github/workflows/ci.yml` runs install (`--ignore-scripts`), `pnpm audit --audit-level=high`, `pnpm typecheck` and `pnpm build` on push and PR to main. CodeQL runs as GitHub default setup. Renovate handles deps.
+`pnpm test` builds, then runs `test/server.test.ts` with `tsx --test`: each test spawns `build/index.js` through the MCP SDK `StdioClientTransport` against `mongodb-memory-server` (mongod downloads on first run; `allowBuilds` sets its postinstall to `false`). `pnpm demo` runs `scripts/demo.ts`, which reuses `test/harness.ts`. `pnpm typecheck` also checks `test/` and `scripts/` through `test/tsconfig.json`.
+
+`.github/workflows/ci.yml` runs install (`--ignore-scripts`), `pnpm audit --audit-level=high`, `pnpm typecheck`, `pnpm build` and `pnpm test` on push and PR to main, plus a `docker` job that builds the compose image and pipes an MCP `initialize` into it. CodeQL runs as GitHub default setup. Renovate handles deps.
+
+`.github/workflows/release.yml` runs on a `v*` tag: version check (tag = `package.json` = `server.json`), gates, `npm publish` via trusted publishing, then `mcp-publisher login github-oidc` and `publish`. Bump `package.json`, both versions in `server.json`, and the README roadmap heading together.
 
 GitHub's dependency graph only reads the first YAML document of the pnpm 12 lockfile (the pnpm binaries), so Dependabot does not see app dependencies. The CI audit step is the real vulnerability gate.
 

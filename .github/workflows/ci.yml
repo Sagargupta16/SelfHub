@@ -44,3 +44,29 @@ jobs:
 
       - name: Verify build output
         run: test -f build/index.js
+
+      # Spawns build/index.js under the MCP SDK client against mongodb-memory-server
+      - name: Test
+        timeout-minutes: 10
+        run: pnpm test
+
+  docker:
+    name: Docker image
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+
+      - name: Build image
+        run: docker compose build selfhub
+
+      - name: Smoke test (MCP initialize over stdio)
+        run: |
+          printf '%s\n' '{"jsonrpc":"2.0","id":1,"method":"initialize","params":{"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"ci","version":"0"}}}' \
+            | timeout 120 docker compose run --rm -T selfhub > response.json || true
+          cat response.json
+          grep -q '"serverInfo"' response.json
+
+      - name: Stop services
+        if: always()
+        run: docker compose down -v

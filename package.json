@@ -1,9 +1,22 @@
 {
   "name": "selfhub-mcp-server",
-  "version": "0.2.5",
+  "version": "0.3.0",
   "description": "Personal MCP-powered digital hub - private data center with AI integration for memory, notes, and personal knowledge management",
+  "mcpName": "io.github.Sagargupta16/selfhub",
   "main": "build/index.js",
+  "bin": {
+    "selfhub-mcp-server": "build/index.js"
+  },
+  "files": [
+    "build",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
   "packageManager": "pnpm@12.11.2",
   "scripts": {
     "build": "tsc",
@@ -11,7 +24,9 @@
     "dev": "tsx watch src/index.ts",
     "start": "node build/index.js",
     "prepare": "pnpm run build",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p test",
+    "test": "pnpm build && tsx --test test/*.test.ts",
+    "demo": "pnpm build && tsx scripts/demo.ts",
     "seed": "tsx src/seed.ts",
     "clean": "node -e \"require('node:fs').rmSync('build',{recursive:true,force:true})\"",
     "reset": "pnpm clean && pnpm build",
@@ -19,10 +34,23 @@
   },
   "keywords": [
     "mcp",
-    "model-context-protocol"
+    "model-context-protocol",
+    "mcp-server",
+    "memory",
+    "claude",
+    "mongodb",
+    "knowledge-management"
   ],
   "author": "Sagar Gupta",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Sagargupta16/SelfHub.git"
+  },
+  "homepage": "https://github.com/Sagargupta16/SelfHub#readme",
+  "bugs": {
+    "url": "https://github.com/Sagargupta16/SelfHub/issues"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.32.1",
     "dotenv": "^18.0.8",
@@ -30,6 +58,7 @@
   },
   "devDependencies": {
     "@types/node": "^26.6.5",
+    "mongodb-memory-server": "^11.3.0",
     "tsx": "^4.23.15",
     "typescript": "^7.0.0"
   }

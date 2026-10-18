@@ -81,73 +81,40 @@ export class MemoryService {
     memories: Memory[];
     total: number;
   }> {
-    const memories = await storage.listMemories({
-      type: input.type,
-      category: input.category,
-      tags: input.tags,
-      contextId: input.contextId,
-    });
-
-    // Sort
-    const sortBy = input.sortBy || "createdAt";
-    const sortOrder = input.sortOrder || "desc";
-
-    memories.sort((a: Memory, b: Memory) => {
-      let aVal: number, bVal: number;
-
-      if (sortBy === "createdAt" || sortBy === "updatedAt") {
-        aVal = a.metadata[sortBy].getTime();
-        bVal = b.metadata[sortBy].getTime();
-      } else {
-        aVal = a.metadata[sortBy] as number;
-        bVal = b.metadata[sortBy] as number;
+    return await storage.listMemories(
+      {
+        type: input.type,
+        category: input.category,
+        tags: input.tags,
+        contextId: input.contextId,
+      },
+      {
+        sortField: input.sortBy || "createdAt",
+        sortOrder: input.sortOrder || "desc",
+        offset: Math.max(0, Math.trunc(input.offset || 0)),
+        limit: input.limit || 50,
       }
-
-      return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
-    });
-
-    // Pagination
-    const limit = input.limit || 50;
-    const offset = input.offset || 0;
-    const paginated = memories.slice(offset, offset + limit);
-
-    return {
-      memories: paginated,
-      total: memories.length,
-    };
+    );
   }
 
   async searchMemories(input: SearchMemoriesInput): Promise<{
-    results: Array<{ memory: Memory; relevance: string }>;
+    results: Array<{ memory: Memory; relevance: string; score: number }>;
     total: number;
   }> {
-    const limit = input.limit || 10;
-    let memories = await storage.searchMemories(input.query, 100);
+    const { results, total } = await storage.searchMemories(
+      input.query,
+      { type: input.type, category: input.category, tags: input.tags },
+      input.limit || 10
+    );
 
-    // Apply filters
-    if (input.category) {
-      memories = memories.filter((m: Memory) => m.category === input.category);
-    }
-    if (input.type) {
-      memories = memories.filter((m: Memory) => m.type === input.type);
-    }
-    if (input.tags && input.tags.length > 0) {
-      memories = memories.filter((m: Memory) =>
-        input.tags!.some((tag) => m.metadata.tags.includes(tag))
-      );
-    }
-
-    // Simple relevance scoring based on access count and importance
-    const results = memories
-      .map((memory: Memory) => ({
-        memory,
-        relevance: memory.metadata.importance >= 4 ? "high" : memory.metadata.importance >= 3 ? "medium" : "low",
-      }))
-      .slice(0, limit);
-
+    // Results are ranked by MongoDB textScore; relevance is the importance label
     return {
-      results,
-      total: memories.length,
+      results: results.map(({ memory, score }) => ({
+        memory,
+        score,
+        relevance: memory.metadata.importance >= 4 ? "high" : memory.metadata.importance >= 3 ? "medium" : "low",
+      })),
+      total,
     };
   }
 

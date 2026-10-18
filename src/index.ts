@@ -10,7 +10,7 @@ import {
 } from "@modelcontextprotocol/sdk/types.js";
 import { memoryService } from "./services/memory.service.js";
 import { contextService } from "./services/context.service.js";
-import { connectDatabase } from "./db/connection.js";
+import { connectDatabase, shutdown } from "./db/connection.js";
 
 /**
  * SelfHub MCP Server
@@ -106,7 +106,8 @@ const TOOLS: Tool[] = [
           description: "Maximum number of results (default: 50)",
         },
         offset: {
-          type: "number",
+          type: "integer",
+          minimum: 0,
           description: "Offset for pagination (default: 0)",
         },
       },
@@ -384,6 +385,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
                     title: r.memory.metadata.title,
                     content: r.memory.content.substring(0, 150) + (r.memory.content.length > 150 ? "..." : ""),
                     relevance: r.relevance,
+                    score: r.score,
                     tags: r.memory.metadata.tags,
                     category: r.memory.category,
                   })),
@@ -556,6 +558,9 @@ async function main() {
 
     const transport = new StdioServerTransport();
     await server.connect(transport);
+    // MCP clients shut a stdio server down by closing its stdin; exit instead of
+    // idling on the open MongoDB connection
+    process.stdin.on("end", shutdown);
     console.error("🚀 SelfHub MCP Server running with MongoDB!");
     console.error("💾 Database: Connected and ready");
     console.error("🛠️  Available tools: 9 (store, retrieve, search, list, delete, contexts, stats)");
