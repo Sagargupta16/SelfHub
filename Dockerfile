@@ -2,7 +2,8 @@
 
 FROM node:24-alpine AS build
 WORKDIR /app
-RUN npm install -g pnpm@12.11.2
+# --ignore-scripts keeps pnpm's sh placeholder bins, which run pnpm through Node
+RUN npm install -g --ignore-scripts pnpm@12.11.2
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN pnpm install --frozen-lockfile --ignore-scripts
 COPY tsconfig.json ./

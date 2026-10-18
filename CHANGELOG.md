@@ -14,7 +14,7 @@
 - `activate_context` loads a context's memories with one `$in` query instead of one query and one write per memory, and no longer counts the bulk load as an access
 - Exit cleanly when the client closes stdin instead of idling on the open MongoDB connection
 - `list_memories` declares `offset` as a non-negative integer and clamps negative or fractional values to a whole number from 0, since MongoDB `skip()` rejects them
-- `release.yml` pins `mcp-publisher` v1.8.1 and checks its sha256, and skips `npm publish` when the version is already on npm so a failed registry step can be re-run
+- `release.yml` pins `pnpm/action-setup` to the v6.1.0 commit and npm to 12.2.0 (installed with `--ignore-scripts`), downloads `mcp-publisher` v1.8.1 over HTTPS only and checks its sha256, and skips `npm publish` when the version is already on npm so a failed registry step can be re-run
 - CI caps the test step at 10 minutes, so a server that stops exiting on stdin close fails the job instead of hanging it
 - README: Docker Compose and from-source come first in the quick start; npm is marked as available after the first release, with the one-time npm trusted publisher setup documented
 
