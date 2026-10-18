@@ -38,7 +38,7 @@ flowchart LR
 ### Design decisions
 
 - **stdio transport, no HTTP port** - the client owns the process lifetime, nothing listens on the network, and stdout is reserved for JSON-RPC (all logs go to stderr).
-- **MongoDB with a text index** - `search_memories` uses a `$text` index over content, title and description, so search runs in the database instead of scanning in Node.
+- **MongoDB with a text index** - `search_memories` uses a `$text` index over content, title and description, so full-text matching runs in MongoDB; category, type and tag filters are then applied to the top 100 hits.
 - **Contexts as a second collection** - a context stores memory IDs and each memory stores its `contextId`, so `activate_context` loads a project's memories in one call and only one context is active at a time.
 - **Readable IDs** - `mem_xxxxxxxx` and `ctx_xxxxxxxx` IDs are easy for a model to quote back in follow-up tool calls.
 
