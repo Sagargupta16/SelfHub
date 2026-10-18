@@ -1,2 +1,10 @@
 allowBuilds:
   esbuild: true
+
+overrides:
+  fast-uri: '>=4.1.2'
+  ip-address: '>=10.7.1'
+  hono: '>=4.12.34'
+  '@hono/node-server': '<3'
+  body-parser: '>=2.3.0'
+  qs: '>=6.16.0'

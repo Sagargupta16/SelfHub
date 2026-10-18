@@ -11,6 +11,37 @@ SelfHub is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 Think of it as your **personal knowledge base that travels with you across all AI conversations**.
 
+## Architecture
+
+The MCP client launches SelfHub as a child process and talks JSON-RPC over stdio. Every tool call goes through a thin service layer into MongoDB, so the same memories show up in Claude Desktop, Claude Code and VS Code.
+
+```mermaid
+flowchart LR
+    subgraph Clients["MCP clients"]
+        CD[Claude Desktop]
+        CC[Claude Code]
+        VS[VS Code Copilot]
+    end
+    subgraph SelfHub["SelfHub (Node.js, stdio)"]
+        IDX["src/index.ts<br/>9 tool schemas + dispatcher"]
+        MS[memory.service.ts]
+        CS[context.service.ts]
+        ST["mongodb-storage.ts<br/>Mongoose models"]
+    end
+    DB[("MongoDB<br/>memories + contexts<br/>text index")]
+    CD & CC & VS -- "JSON-RPC over stdio" --> IDX
+    IDX --> MS & CS
+    MS & CS --> ST
+    ST --> DB
+```
+
+### Design decisions
+
+- **stdio transport, no HTTP port** - the client owns the process lifetime, nothing listens on the network, and stdout is reserved for JSON-RPC (all logs go to stderr).
+- **MongoDB with a text index** - `search_memories` uses a `$text` index over content, title and description, so full-text matching runs in MongoDB; category, type and tag filters are then applied to the top 100 hits.
+- **Contexts as a second collection** - a context stores memory IDs and each memory stores its `contextId`, so `activate_context` loads a project's memories in one call and only one context is active at a time.
+- **Readable IDs** - `mem_xxxxxxxx` and `ctx_xxxxxxxx` IDs are easy for a model to quote back in follow-up tool calls.
+
 ## 🚀 Setup with Claude Desktop
 
 ### Step 1: Install and Build
@@ -60,6 +91,14 @@ In Claude, try:
 - "List all my memories"
 - "Search my memories for typescript"
 - "Store that I prefer dark mode in all applications"
+
+## Setup with Claude Code
+
+After building, register the server with one command (use your absolute path):
+
+```bash
+claude mcp add selfhub -- node /absolute/path/to/SelfHub/build/index.js
+```
 
 ## 💻 Setup with VS Code
 
@@ -337,8 +376,10 @@ pnpm typecheck
 pnpm build
 
 # Clean build directory
-rm -rf build
+pnpm clean
 ```
+
+CI runs `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm audit --audit-level=high`, `pnpm typecheck` and `pnpm build` on every push and pull request.
 
 ### How It Works
 
@@ -443,7 +484,7 @@ This project uses [Renovate](https://docs.renovatebot.com/) for automated depend
 
 ## 🗺️ Roadmap
 
-### Current Version (v0.2.0)
+### Current Version (v0.2.5)
 
 - ✅ MongoDB persistent storage
 - ✅ 9 MCP tools

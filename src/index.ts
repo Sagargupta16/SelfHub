@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { readFileSync } from "node:fs";
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import {
@@ -125,6 +126,11 @@ const TOOLS: Tool[] = [
           type: "string",
           description: "Filter by category",
         },
+        type: {
+          type: "string",
+          enum: ["short-term", "long-term", "contextual"],
+          description: "Filter by memory type",
+        },
         tags: {
           type: "array",
           items: { type: "string" },
@@ -177,6 +183,11 @@ const TOOLS: Tool[] = [
           items: { type: "string" },
           description: "Tags for the context",
         },
+        memoryIds: {
+          type: "array",
+          items: { type: "string" },
+          description: "Initial memory IDs to include in the context",
+        },
       },
       required: ["name", "type"],
     },
@@ -224,13 +235,18 @@ const TOOLS: Tool[] = [
   },
 ];
 
+// package.json sits one level above both src/ (tsx) and build/ (node)
+const { version } = JSON.parse(
+  readFileSync(new URL("../package.json", import.meta.url), "utf8")
+) as { version: string };
+
 /**
  * Create and configure the MCP server
  */
 const server = new Server(
   {
     name: "selfhub-mcp-server",
-    version: "0.1.0",
+    version,
   },
   {
     capabilities: {
@@ -252,13 +268,11 @@ server.setRequestHandler(ListToolsRequestSchema, async () => {
  * Handler for tool execution
  */
 server.setRequestHandler(CallToolRequestSchema, async (request) => {
-  const { name, arguments: args } = request.params;
+  // Clients may omit `arguments` for tools with no required params (get_stats, list_*)
+  const { name } = request.params;
+  const args = request.params.arguments ?? {};
 
   try {
-    if (!args) {
-      throw new Error("Arguments are required");
-    }
-
     switch (name) {
       case "store_memory": {
         const memory = await memoryService.storeMemory({
@@ -354,6 +368,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
         const result = await memoryService.searchMemories({
           query: args.query as string,
           category: args.category as any,
+          type: args.type as any,
           tags: args.tags as string[],
           limit: args.limit as number,
         });
@@ -403,6 +418,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           type: args.type as any,
           description: args.description as string,
           tags: args.tags as string[],
+          memoryIds: args.memoryIds as string[] | undefined,
         });
 
         return {

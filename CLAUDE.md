@@ -16,10 +16,10 @@ Public repo at github.com/Sagargupta16/SelfHub. Runs locally as a stdio process 
 
 ## Stack
 
-- **Language**: TypeScript 5, ESM
+- **Language**: TypeScript 7, ESM, Node 24 (`.nvmrc`)
 - **Framework**: `@modelcontextprotocol/sdk` (stdio transport)
 - **Database**: MongoDB via Mongoose 9
-- **Package manager**: pnpm
+- **Package manager**: pnpm 12 (overrides and `allowBuilds` live in `pnpm-workspace.yaml`; pnpm 12 ignores the `pnpm` field in `package.json`)
 - **Deploy target**: local-only
 
 ## Run
@@ -33,7 +33,9 @@ pnpm seed         # load 6 sample memories + 2 contexts
 
 ## Test
 
-No test suite. `pnpm typecheck` (tsc --noEmit) is the only check. No CI workflows either -- `.github/` holds only CODEOWNERS and FUNDING.yml; Renovate handles deps.
+No test suite. `.github/workflows/ci.yml` runs install (`--ignore-scripts`), `pnpm audit --audit-level=high`, `pnpm typecheck` and `pnpm build` on push and PR to main. CodeQL runs as GitHub default setup. Renovate handles deps.
+
+GitHub's dependency graph only reads the first YAML document of the pnpm 12 lockfile (the pnpm binaries), so Dependabot does not see app dependencies. The CI audit step is the real vulnerability gate.
 
 ## Entry points
 
@@ -53,8 +55,7 @@ No test suite. `pnpm typecheck` (tsc --noEmit) is the only check. No CI workflow
 - `MONGODB_URI` comes from `.env`; if unset it silently falls back to `mongodb://localhost:27017/selfhub`. A real `.env` exists locally -- never commit or read it.
 - `prepare` script runs `pnpm build` on every `pnpm install`.
 - Windows client configs need double backslashes in the `build/index.js` path.
-- Version drift: `package.json` says 0.1.0 while the README describes v0.2.0. Reconcile when touching either.
-- `.nvmrc` pins Node 19 (non-LTS, stale) -- modern Node works fine; bump the pin when touching tooling.
+- The MCP `serverInfo.version` is read from `package.json` at startup; bump the version there and in the README roadmap heading together.
 
 ## Install
 
