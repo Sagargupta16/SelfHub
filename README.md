@@ -11,6 +11,58 @@ SelfHub is a [Model Context Protocol (MCP)](https://modelcontextprotocol.io/) se
 
 Think of it as your **personal knowledge base that travels with you across all AI conversations**.
 
+## Quick start
+
+Pick one way to run it. Each needs a MongoDB; option 2 brings its own.
+
+**1. npm** (Node 24+, MongoDB at `MONGODB_URI` or `mongodb://localhost:27017/selfhub`):
+
+```bash
+claude mcp add selfhub -e MONGODB_URI=mongodb://localhost:27017/selfhub -- npx -y selfhub-mcp-server
+```
+
+**2. Docker Compose** (no local Node or MongoDB):
+
+```bash
+git clone https://github.com/Sagargupta16/SelfHub.git
+cd SelfHub
+docker compose build
+claude mcp add selfhub -- docker compose -f /absolute/path/to/SelfHub/docker-compose.yml run --rm -T selfhub
+```
+
+The client starts MongoDB (data kept in the `selfhub-data` volume) the first time it launches the server. `docker compose up -d mongo` on its own gives you a MongoDB on `localhost:27017` for options 1 and 3.
+
+**3. From source** - see [Setup with Claude Desktop](#-setup-with-claude-desktop) below.
+
+### See it work in 10 seconds
+
+```bash
+pnpm install
+pnpm demo
+```
+
+`pnpm demo` starts a throwaway in-memory MongoDB and three separate server processes, one per client. What the first one stores, the next two recall. It never touches `MONGODB_URI`. Real output (IDs are random per run):
+
+```text
+[claude-desktop] store_memory {"content":"I use pnpm for every JavaScript project, never npm or yarn","category":"personal","tags":["preferences","tooling"],"importance":5}
+  -> stored mem_0921e35e
+
+[claude-desktop] store_memory {"content":"API responses use camelCase keys and ISO 8601 dates","category":"projects","tags":["api"]}
+  -> stored mem_245a76c2
+
+[claude-desktop] create_context {"name":"Billing API","type":"project","memoryIds":["mem_245a76c2"]}
+  -> created ctx_1cc3a4fc
+
+[claude-code] search_memories {"query":"pnpm"}
+  -> 1 result: "I use pnpm for every JavaScript project, never npm or yarn" (score 0.56, relevance high)
+
+[vscode-copilot] activate_context {"id":"ctx_1cc3a4fc"}
+  -> Billing API, 1 memory: "API responses use camelCase keys and ISO 8601 dates"
+
+[vscode-copilot] get_stats {}
+  -> 2 memories (personal 1, projects 1), 1 context
+```
+
 ## Architecture
 
 The MCP client launches SelfHub as a child process and talks JSON-RPC over stdio. Every tool call goes through a thin service layer into MongoDB, so the same memories show up in Claude Desktop, Claude Code and VS Code.
@@ -38,8 +90,9 @@ flowchart LR
 ### Design decisions
 
 - **stdio transport, no HTTP port** - the client owns the process lifetime, nothing listens on the network, and stdout is reserved for JSON-RPC (all logs go to stderr).
-- **MongoDB with a text index** - `search_memories` uses a `$text` index over content, title and description, so full-text matching runs in MongoDB; category, type and tag filters are then applied to the top 100 hits.
-- **Contexts as a second collection** - a context stores memory IDs and each memory stores its `contextId`, so `activate_context` loads a project's memories in one call and only one context is active at a time.
+- **MongoDB does the work** - `search_memories` runs one query that combines a `$text` index (content, title, description) with the category, type and tag filters, ranks by `textScore` and returns that score. `list_memories` sorts, skips and limits in MongoDB, so only one page crosses the wire. Indexes are built before the server accepts calls, so the first search on a new database works.
+- **Contexts as a second collection** - a context stores memory IDs and each memory stores its `contextId`. `activate_context` loads a project's memories with a single `$in` query and only one context is active at a time. Unknown IDs are never linked, and `delete_memory` pulls the ID out of every context, so `memoryCount` stays accurate.
+- **Plays by the stdio lifecycle** - when the client closes stdin, the server closes its MongoDB connection and exits instead of lingering.
 - **Readable IDs** - `mem_xxxxxxxx` and `ctx_xxxxxxxx` IDs are easy for a model to quote back in follow-up tool calls.
 
 ## 🚀 Setup with Claude Desktop
@@ -211,6 +264,8 @@ Find memories about "API design"
 - `tags` - Filter by tags
 - `limit` - Max results (default: 10)
 
+Each result carries `score` (MongoDB `textScore`, results are sorted by it) and `relevance` (`high`, `medium` or `low` from the memory's importance).
+
 #### 5. `delete_memory`
 
 Delete a memory by ID.
@@ -354,7 +409,15 @@ SelfHub/
 │   │   └── context.service.ts
 │   └── storage/              # Storage implementation
 │       └── mongodb-storage.ts # MongoDB persistent storage
+├── test/                     # End-to-end tests (MCP SDK client + mongodb-memory-server)
+│   ├── harness.ts
+│   └── server.test.ts
+├── scripts/
+│   └── demo.ts               # pnpm demo: three clients, one memory
 ├── build/                    # Compiled JavaScript output
+├── Dockerfile                # Production image (node:24-alpine)
+├── docker-compose.yml        # MongoDB + server
+├── server.json               # MCP Registry metadata
 ├── .env.example              # Environment variable template
 ├── package.json
 ├── tsconfig.json
@@ -375,11 +438,25 @@ pnpm typecheck
 # Build for production
 pnpm build
 
+# End-to-end tests
+pnpm test
+
+# Cross-client demo against an in-memory MongoDB
+pnpm demo
+
 # Clean build directory
 pnpm clean
 ```
 
-CI runs `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm audit --audit-level=high`, `pnpm typecheck` and `pnpm build` on every push and pull request.
+CI runs `pnpm install --frozen-lockfile --ignore-scripts`, `pnpm audit --audit-level=high`, `pnpm typecheck`, `pnpm build` and `pnpm test` on every push and pull request, and builds the Docker image and checks that it answers an MCP `initialize` over stdio.
+
+### Tests
+
+`pnpm test` builds the server, then runs 14 end-to-end tests with `node:test`. Each test spawns `build/index.js` as a real stdio child process, connects with the official MCP SDK client, and runs against a throwaway MongoDB from `mongodb-memory-server` (downloaded on first run). They cover the tool contract (no-argument calls, filters, pagination, context membership, delete cleanup, error results), the first search on a new database, clean exit on stdin close, and two clients sharing one database. Run against the v0.2.5 server, 7 of the 14 fail (6 assertion failures, 1 timeout waiting for the process to exit); all 14 pass on v0.3.0.
+
+### Releases
+
+Pushing a `v*` tag runs [`.github/workflows/release.yml`](.github/workflows/release.yml): it checks that the tag, `package.json` and `server.json` versions match, runs the gates, publishes to npm with trusted publishing (OIDC, no token in secrets), and publishes `server.json` to the [MCP Registry](https://registry.modelcontextprotocol.io) as `io.github.Sagargupta16/selfhub`.
 
 ### How It Works
 
@@ -484,7 +561,7 @@ This project uses [Renovate](https://docs.renovatebot.com/) for automated depend
 
 ## 🗺️ Roadmap
 
-### Current Version (v0.2.5)
+### Current Version (v0.3.0)
 
 - ✅ MongoDB persistent storage
 - ✅ 9 MCP tools
@@ -492,6 +569,9 @@ This project uses [Renovate](https://docs.renovatebot.com/) for automated depend
 - ✅ Context management
 - ✅ Text-based search
 - ✅ Sample data seeder
+- End-to-end test suite in CI
+- Docker Compose setup
+- npm package and MCP Registry metadata, published from a tag
 
 ### Future Enhancements
 

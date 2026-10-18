@@ -20,12 +20,15 @@ Thanks for your interest in contributing! Pull requests are welcome.
 
 ## Before Submitting a PR
 
-- Make sure the type check and build pass:
+- Make sure the type check, build and tests pass:
 
   ```bash
   pnpm typecheck
   pnpm build
+  pnpm test
   ```
+
+  `pnpm test` needs no MongoDB of your own: it downloads a throwaway one through `mongodb-memory-server` on first run.
 
 - Keep changes focused - one feature or fix per PR.
 - Use conventional commit messages (`feat:`, `fix:`, `docs:`, `chore:`, etc.).
