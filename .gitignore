@@ -35,5 +35,8 @@ npm-debug.log*
 coverage/
 .nyc_output/
 
+# npm pack output
+*.tgz
+
 # Added for consistency
 .next/

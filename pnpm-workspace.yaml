@@ -1,5 +1,7 @@
 allowBuilds:
   esbuild: true
+  # the test suite downloads mongod on first use, so skip the postinstall download
+  mongodb-memory-server: false
 
 overrides:
   fast-uri: '>=4.1.2'

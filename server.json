@@ -1,0 +1,30 @@
+{
+  "$schema": "https://static.modelcontextprotocol.io/schemas/2025-12-11/server.schema.json",
+  "name": "io.github.Sagargupta16/selfhub",
+  "title": "SelfHub",
+  "description": "Self-hosted memory hub: one MongoDB of notes and contexts shared by every MCP client.",
+  "repository": {
+    "url": "https://github.com/Sagargupta16/SelfHub",
+    "source": "github"
+  },
+  "version": "0.3.0",
+  "packages": [
+    {
+      "registryType": "npm",
+      "identifier": "selfhub-mcp-server",
+      "version": "0.3.0",
+      "transport": {
+        "type": "stdio"
+      },
+      "environmentVariables": [
+        {
+          "name": "MONGODB_URI",
+          "description": "MongoDB connection string (default: mongodb://localhost:27017/selfhub)",
+          "isRequired": false,
+          "format": "string",
+          "isSecret": true
+        }
+      ]
+    }
+  ]
+}
