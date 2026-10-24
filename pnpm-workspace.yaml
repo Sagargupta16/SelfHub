@@ -4,9 +4,11 @@ allowBuilds:
   mongodb-memory-server: false
 
 overrides:
-  fast-uri: '>=4.1.2'
+  fast-uri: '>=4.2.3'
   ip-address: '>=10.7.1'
   hono: '>=4.12.34'
   '@hono/node-server': '<3'
-  body-parser: '>=2.3.0'
+  body-parser: '>=2.4.0'
   qs: '>=6.16.0'
+  # zod 3 has no patch for GHSA-mrhx-c7xc-m3w5; the MCP SDK accepts ^3.25 || ^4.0
+  zod: '^4.6.6'

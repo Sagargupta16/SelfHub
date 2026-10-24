@@ -15,6 +15,9 @@
 - Exit cleanly when the client closes stdin instead of idling on the open MongoDB connection
 - `list_memories` declares `offset` as a non-negative integer and clamps negative or fractional values to a whole number from 0, since MongoDB `skip()` rejects them
 - `release.yml` pins `pnpm/action-setup` to the v6.1.0 commit and npm to 12.2.0 (installed with `--ignore-scripts`), downloads `mcp-publisher` v1.8.1 over HTTPS only and checks its sha256, and skips `npm publish` when the version is already on npm so a failed registry step can be re-run
+- `ci.yml` pins `pnpm/action-setup` to the same v6.1.0 commit (SonarCloud `githubactions:S7637`)
+- `.env.example` drops the credential-style MongoDB Atlas URI that GitHub secret scanning still flagged and defaults to `mongodb://localhost:27017/selfhub`, the same URI the server falls back to when `MONGODB_URI` is unset
+- Raise pnpm overrides so `pnpm audit` is clean again: body-parser 2.4.0 (GHSA-27r3-jxmh-p828, high), fast-uri 4.2.3 (2 moderate, 2 low), and zod 4.6.7 under the MCP SDK (GHSA-mrhx-c7xc-m3w5, high; zod 3 has no patched release)
 - CI caps the test step at 10 minutes, so a server that stops exiting on stdin close fails the job instead of hanging it
 - README: Docker Compose and from-source come first in the quick start; npm is marked as available after the first release, with the one-time npm trusted publisher setup documented
 
