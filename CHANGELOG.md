@@ -18,6 +18,8 @@
 - `ci.yml` pins `pnpm/action-setup` to the same v6.1.0 commit (SonarCloud `githubactions:S7637`)
 - `.env.example` drops the credential-style MongoDB Atlas URI that GitHub secret scanning still flagged and defaults to `mongodb://localhost:27017/selfhub`, the same URI the server falls back to when `MONGODB_URI` is unset
 - Raise pnpm overrides so `pnpm audit` is clean again: body-parser 2.4.0 (GHSA-27r3-jxmh-p828, high), fast-uri 4.2.3 (2 moderate, 2 low), and zod 4.6.7 under the MCP SDK (GHSA-mrhx-c7xc-m3w5, high; zod 3 has no patched release)
+- Refresh the lockfile so `pnpm audit` is clean again: follow-redirects 1.16.2 under mongodb-memory-server (GHSA-mrwp-f3q8-3g9p, high), qs 6.17.1 and @hono/node-server 2.1.5 under the MCP SDK (2 moderate)
+- `docker-compose.yml` starts MongoDB with `GLIBC_TUNABLES=glibc.pthread.rseq=1`: `mongo:8` (8.3) refuses to start on Linux kernels 6.19.0 to 7.0.13 (SERVER-121912), which GitHub's ubuntu runners now boot, so the CI Docker job failed with an unhealthy mongo container
 - CI caps the test step at 10 minutes, so a server that stops exiting on stdin close fails the job instead of hanging it
 - README: Docker Compose and from-source come first in the quick start; npm is marked as available after the first release, with the one-time npm trusted publisher setup documented
 
