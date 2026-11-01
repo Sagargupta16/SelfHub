@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1
 
-FROM node:24-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 # --ignore-scripts keeps pnpm's sh placeholder bins, which run pnpm through Node
 RUN npm install -g --ignore-scripts pnpm@12.11.2
@@ -11,7 +11,7 @@ COPY src ./src
 RUN pnpm build
 RUN pnpm prune --prod --ignore-scripts
 
-FROM node:24-alpine
+FROM node:26-alpine
 WORKDIR /app
 ENV NODE_ENV=production
 COPY --from=build /app/package.json ./
