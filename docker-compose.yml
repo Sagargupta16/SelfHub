@@ -6,7 +6,7 @@
 
 services:
   mongo:
-    image: mongo:8
+    image: mongo:9
     restart: unless-stopped
     environment:
       # mongod refuses to start on Linux kernels 6.19.0 to 7.0.13 when tcmalloc uses
